@@ -216,6 +216,25 @@ def submit_candidate_response(token: str, data: dict, ip: str = ""):
     conn.close()
     return True
 
+def reset_all_responses():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+    UPDATE candidates SET
+        status = 'pending',
+        response_english_name = '',
+        response_uniform_size = '',
+        response_dormitory = '',
+        decline_reason = '',
+        decline_detail = '',
+        responded_at = NULL,
+        ip_address = NULL,
+        ninehire_synced = 0
+    """)
+    conn.commit()
+    conn.close()
+    return True
+
 def mark_ninehire_synced(candidate_id: int):
     conn = get_connection()
     cursor = conn.cursor()

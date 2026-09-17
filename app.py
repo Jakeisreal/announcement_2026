@@ -139,6 +139,11 @@ async def toggle_dormitory(candidate_id: int, req: ToggleDormRequest):
     db.toggle_dormitory_eligibility(candidate_id, req.eligible)
     return {"success": True}
 
+@app.post("/api/admin/reset")
+async def reset_admin_data():
+    db.reset_all_responses()
+    return {"success": True, "message": "모든 응답 데이터가 초기화되었습니다."}
+
 @app.post("/api/admin/sync_ninehire")
 async def sync_ninehire_api():
     res = ninehire_sync.sync_candidate_tags_to_ninehire()
