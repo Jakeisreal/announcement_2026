@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>화신그룹 공채 최종 입사확인 관리자 대시보드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        * { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
+        .hwashin-blue { background-color: #0d2b5c; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 pb-16">
+
+    <!-- 상단 네비게이션 -->
+    <header class="hwashin-blue text-white shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-2.5 rounded-xl backdrop-blur-sm">
+                    <i class="fa-solid fa-users-gear text-2xl text-blue-200"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold tracking-wider text-blue-200 uppercase">HWASHIN HR ADMIN</span>
+                    <h1 class="text-lg font-bold">2026년 정규직 전환 채용 최종 입사확인 대시보드</h1>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <!-- 마감 시한 뱃지 -->
+                <div class="bg-red-500/20 border border-red-400/30 px-3 py-1.5 rounded-xl flex items-center space-x-2 text-xs">
+                    <span class="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
+                    <span class="font-medium text-red-200">마감: 09/18 11:59</span>
+                    <span id="countdown-text" class="font-mono font-bold text-white ml-1"></span>
+                </div>
+                <a href="https://app.notion.com/p/3db81225d75380f0bce9c116ca22486f?source=copy_link" target="_blank"
+                   class="bg-white/10 hover:bg-white/20 text-xs px-3 py-2 rounded-xl text-blue-100 transition-colors flex items-center">
+                    <i class="fa-solid fa-book-open mr-1.5"></i> 노션 안내문
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 mt-6 space-y-6">
+
+        <!-- KPI 통계 요약 카드 -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
+            <!-- 총 대상자 -->
+            <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+                <div class="flex justify-between items-center text-slate-500 text-xs font-semibold">
+                    <span>전체 대상자</span>
+                    <i class="fa-solid fa-user-group text-slate-400 text-sm"></i>
+                </div>
+                <div class="mt-3 flex items-baseline justify-between">
+                    <span id="stat-total" class="text-2xl sm:text-3xl font-black text-slate-900">11</span>
+                    <span class="text-xs text-slate-500">명</span>
+                </div>
+            </div>
+
+            <!-- 응답 완료 -->
+            <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+                <div class="flex justify-between items-center text-slate-500 text-xs font-semibold">
+                    <span>응답 완료</span>
+                    <i class="fa-solid fa-clipboard-check text-blue-500 text-sm"></i>
+                </div>
+                <div class="mt-3 flex items-baseline justify-between">
+                    <span id="stat-responded" class="text-2xl sm:text-3xl font-black text-blue-600">0</span>
+                    <span id="stat-progress-pct" class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">0%</span>
+                </div>
+            </div>
+
+            <!-- 미응답 -->
+            <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+                <div class="flex justify-between items-center text-slate-500 text-xs font-semibold">
+                    <span>미응답 (대기)</span>
+                    <i class="fa-solid fa-clock text-amber-500 text-sm"></i>
+                </div>
+                <div class="mt-3 flex items-baseline justify-between">
+                    <span id="stat-pending" class="text-2xl sm:text-3xl font-black text-amber-600">11</span>
+                    <span class="text-xs text-amber-600 font-medium">명</span>
+                </div>
+            </div>
+
+            <!-- 입사 희망 -->
+            <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+                <div class="flex justify-between items-center text-slate-500 text-xs font-semibold">
+                    <span>입사 희망 (수락)</span>
+                    <i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i>
+                </div>
+                <div class="mt-3 flex items-baseline justify-between">
+                    <span id="stat-accepted" class="text-2xl sm:text-3xl font-black text-emerald-600">0</span>
+                    <span class="text-xs text-emerald-600 font-medium">명</span>
+                </div>
+            </div>
+
+            <!-- 입사 포기 -->
+            <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+                <div class="flex justify-between items-center text-slate-500 text-xs font-semibold">
+                    <span>입사 포기</span>
+                    <i class="fa-solid fa-circle-xmark text-rose-500 text-sm"></i>
+                </div>
+                <div class="mt-3 flex items-baseline justify-between">
+                    <span id="stat-declined" class="text-2xl sm:text-3xl font-black text-rose-600">0</span>
+                    <span class="text-xs text-rose-600 font-medium">명</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 액션 툴바 -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-2">
+                <button onclick="loadCandidates()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors flex items-center">
+                    <i class="fa-solid fa-rotate mr-1.5"></i> 새로고침
+                </button>
+                <button onclick="openMessageModal()" class="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-xl transition-colors flex items-center">
+                    <i class="fa-solid fa-comment-sms mr-1.5"></i> 안내 발송 문구 생성기
+                </button>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <!-- 나인하이어 동기화 -->
+                <button onclick="syncNinehire()" id="btn-sync-ninehire" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition-all flex items-center">
+                    <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> 나인하이어 태그 일괄 반영
+                </button>
+                <!-- 엑셀 다운로드 -->
+                <a href="/api/admin/export_excel" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition-all flex items-center">
+                    <i class="fa-solid fa-file-excel mr-1.5"></i> 최종 결과 엑셀 다운로드
+                </a>
+            </div>
+        </div>
+
+        <!-- 안내 설명 박스 -->
+        <div class="bg-blue-50/60 border border-blue-200 rounded-2xl p-4 text-xs text-blue-900 flex items-start space-x-3">
+            <i class="fa-solid fa-circle-info text-blue-600 text-base mt-0.5 shrink-0"></i>
+            <div class="leading-relaxed">
+                <span class="font-bold">시스템 안내사항:</span>
+                <ul class="list-disc list-inside mt-1 space-y-0.5 text-blue-800">
+                    <li>합격자 접속 화면에서는 <strong>배정 본부 및 부서가 완전히 비공개</strong> 처리됩니다.</li>
+                    <li><strong>기숙사 대상자 설정</strong> 열의 토글 스위치를 통해 지원자별로 기숙사 신청 문항의 노출 여부를 실시간으로 제어할 수 있습니다.</li>
+                    <li>합격자별 <strong>[🔗 접속]</strong> 또는 <strong>[📋 링크]</strong> 버튼으로 1:1 고유 응답 링크를 바로 열거나 복사할 수 있습니다.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 합격자 명단 테이블 -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center">
+                    <i class="fa-solid fa-list-check text-blue-600 mr-2"></i>
+                    2026년 공채 최종 합격자 응답 관리 (총 11명)
+                </h3>
+                <span class="text-xs text-slate-500">실시간 연동 상태</span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-semibold">
+                        <tr>
+                            <th class="px-4 py-3 text-center">No</th>
+                            <th class="px-4 py-3">성명 / 영문명</th>
+                            <th class="px-4 py-3">배정 본부 / 부서</th>
+                            <th class="px-4 py-3">연락처 / 이메일</th>
+                            <th class="px-4 py-3 text-center">기숙사 대상 설정</th>
+                            <th class="px-4 py-3 text-center">응답 상태</th>
+                            <th class="px-4 py-3">응답 세부 내역</th>
+                            <th class="px-4 py-3">제출 일시</th>
+                            <th class="px-4 py-3 text-center">나인하이어</th>
+                            <th class="px-4 py-3 text-center">개별 링크</th>
+                        </tr>
+                    </thead>
+                    <tbody id="candidate-table-body" class="divide-y divide-slate-100 text-slate-700">
+                        <!-- JS로 렌더링 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 발송 메시지 생성 모달 -->
+    <div id="message-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="text-base font-bold text-slate-900 flex items-center">
+                    <i class="fa-solid fa-paper-plane text-blue-600 mr-2"></i>
+                    합격자별 안내 메시지 템플릿 (개인별 고유 링크 자동 포함)
+                </h3>
+                <button onclick="closeMessageModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3 flex-1 overflow-y-auto pr-1">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">대상자 선택</label>
+                    <select id="msg-candidate-select" onchange="updateMessagePreview()" 
+                            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium">
+                    </select>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs font-semibold text-slate-700">메시지 내용 미리보기 (SMS / 카카오톡 / 메일용)</label>
+                        <button onclick="copyMessageText()" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center">
+                            <i class="fa-regular fa-copy mr-1"></i> 문구 복사
+                        </button>
+                    </div>
+                    <textarea id="msg-preview-text" rows="11" 
+                              class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono leading-relaxed text-slate-800 resize-none"></textarea>
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex justify-end space-x-2">
+                <button onclick="closeMessageModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl">
+                    닫기
+                </button>
+                <button onclick="copyMessageText()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md">
+                    클립보드에 복사
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DEADLINE = new Date("2026-09-18T11:59:00+09:00").getTime();
+        let candidatesData = [];
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const diff = DEADLINE - now;
+            if (diff <= 0) {
+                document.getElementById('countdown-text').innerText = '(마감됨)';
+                return;
+            }
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            document.getElementById('countdown-text').innerText = `${hours}시간 ${minutes}분 ${seconds}초 남음`;
+        }
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        async function loadCandidates() {
+            try {
+                const res = await fetch('/api/admin/candidates');
+                const data = await res.json();
+                candidatesData = data.candidates || [];
+                renderKPI(data.summary);
+                renderTable(candidatesData);
+            } catch (err) {
+                console.error('데이터 로드 실패:', err);
+            }
+        }
+
+        function renderKPI(s) {
+            document.getElementById('stat-total').innerText = s.total;
+            document.getElementById('stat-responded').innerText = s.responded;
+            document.getElementById('stat-pending').innerText = s.pending;
+            document.getElementById('stat-accepted').innerText = s.accepted;
+            document.getElementById('stat-declined').innerText = s.declined;
+            const pct = s.total > 0 ? Math.round((s.responded / s.total) * 100) : 0;
+            document.getElementById('stat-progress-pct').innerText = `${pct}%`;
+        }
+
+        function renderTable(list) {
+            const tbody = document.getElementById('candidate-table-body');
+            tbody.innerHTML = '';
+
+            list.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/80 transition-colors';
+
+                // 상태 뱃지
+                let statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700">미응답</span>`;
+                if (c.status === 'accepted') {
+                    statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-check mr-1"></i>입사 희망</span>`;
+                } else if (c.status === 'declined') {
+                    statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700 flex items-center justify-center"><i class="fa-solid fa-xmark mr-1"></i>입사 포기</span>`;
+                }
+
+                // 기숙사 스위치
+                const dormSwitch = `
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" ${c.dormitory_eligible ? 'checked' : ''} 
+                               onchange="toggleDorm(${c.id}, this.checked)" class="sr-only peer">
+                        <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                        <span class="ml-2 text-[11px] font-semibold ${c.dormitory_eligible ? 'text-indigo-700' : 'text-slate-400'}">
+                            ${c.dormitory_eligible ? (c.default_dormitory ? `대상 (${c.default_dormitory})` : '대상') : '미대상'}
+                        </span>
+                    </label>
+                `;
+
+                // 응답 세부
+                let detailHtml = '<span class="text-slate-400">-</span>';
+                if (c.status === 'accepted') {
+                    const eng = c.response_english_name || c.english_name || '-';
+                    const sz = c.response_uniform_size || c.uniform_size || '-';
+                    const dorm = c.response_dormitory ? `<br><span class="text-indigo-600 font-semibold"><i class="fa-solid fa-hotel mr-1"></i>${c.response_dormitory}</span>` : '';
+                    detailHtml = `<div><span class="font-mono font-bold text-slate-800">${eng}</span> | 근무복: ${sz}${dorm}</div>`;
+                } else if (c.status === 'declined') {
+                    const reason = c.decline_reason || '-';
+                    const dtl = c.decline_detail ? ` (${c.decline_detail})` : '';
+                    detailHtml = `<span class="text-rose-600 font-medium">사유: ${reason}${dtl}</span>`;
+                }
+
+                // 나인하이어 상태
+                const nhBadge = c.ninehire_synced ? 
+                    `<span class="text-indigo-600 font-bold text-[11px] bg-indigo-50 px-2 py-0.5 rounded"><i class="fa-solid fa-check mr-1"></i>반영됨</span>` :
+                    `<span class="text-slate-400 text-[11px]">미반영</span>`;
+
+                const fullUrl = `${window.location.origin}/confirm/${c.token}`;
+
+                tr.innerHTML = `
+                    <td class="px-4 py-3.5 text-center font-bold text-slate-500">${c.id}</td>
+                    <td class="px-4 py-3.5">
+                        <div class="font-bold text-slate-900">${c.name}</div>
+                        <div class="text-[11px] text-slate-400 font-mono">${c.english_name || '-'}</div>
+                    </td>
+                    <td class="px-4 py-3.5">
+                        <div class="font-semibold text-slate-800">${c.division}</div>
+                        <div class="text-[11px] text-slate-500">${c.department}</div>
+                    </td>
+                    <td class="px-4 py-3.5">
+                        <div class="font-medium text-slate-800">${c.phone}</div>
+                        <div class="text-[11px] text-slate-400">${c.email || '-'}</div>
+                    </td>
+                    <td class="px-4 py-3.5 text-center">${dormSwitch}</td>
+                    <td class="px-4 py-3.5 text-center">${statusBadge}</td>
+                    <td class="px-4 py-3.5">${detailHtml}</td>
+                    <td class="px-4 py-3.5 font-mono text-[11px] text-slate-500">${c.responded_at || '-'}</td>
+                    <td class="px-4 py-3.5 text-center">${nhBadge}</td>
+                    <td class="px-4 py-3.5 text-center">
+                        <div class="flex items-center justify-center space-x-1.5">
+                            <a href="/confirm/${c.token}" target="_blank" title="지원자 폼 열기"
+                               class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors text-xs">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </a>
+                            <button onclick="copyToClipboard('${fullUrl}')" title="링크 복사"
+                                    class="p-1.5 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg transition-colors text-xs">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function toggleDorm(id, eligible) {
+            try {
+                await fetch(`/api/admin/toggle_dormitory/${id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ eligible: eligible })
+                });
+                loadCandidates();
+            } catch (e) {
+                alert('기숙사 대상 설정 변경 중 오류가 발생했습니다.');
+            }
+        }
+
+        async function syncNinehire() {
+            const btn = document.getElementById('btn-sync-ninehire');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> 연동 처리 중...`;
+
+            try {
+                const res = await fetch('/api/admin/sync_ninehire', { method: 'POST' });
+                const result = await res.json();
+                if (result.success) {
+                    alert(`나인하이어 동기화 완료: ${result.synced_count}명의 응답 태그가 반영되었습니다.`);
+                    loadCandidates();
+                } else {
+                    alert('나인하이어 동기화 실패: ' + (result.error || '알 수 없는 오류'));
+                }
+            } catch (err) {
+                alert('나인하이어 통신 중 오류가 발생했습니다.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> 나인하이어 태그 일괄 반영`;
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('링크가 클립보드에 복사되었습니다:\n' + text);
+            });
+        }
+
+        function openMessageModal() {
+            const select = document.getElementById('msg-candidate-select');
+            select.innerHTML = '<option value="all_pending">⚡ [전체 미응답자] 리마인드 템플릿</option>';
+            candidatesData.forEach(c => {
+                const statusStr = c.status === 'pending' ? '미응답' : (c.status === 'accepted' ? '입사희망' : '입사포기');
+                select.innerHTML += `<option value="${c.id}">${c.name} (${c.phone}) - [${statusStr}]</option>`;
+            });
+            updateMessagePreview();
+            document.getElementById('message-modal').classList.remove('hidden');
+        }
+
+        function closeMessageModal() {
+            document.getElementById('message-modal').classList.add('hidden');
+        }
+
+        function updateMessagePreview() {
+            const selectVal = document.getElementById('msg-candidate-select').value;
+            const textarea = document.getElementById('msg-preview-text');
+
+            if (selectVal === 'all_pending') {
+                textarea.value = `[화신그룹] 2026년 정규직 전환 채용 최종 입사확인 안내
+
+안녕하세요, 화신그룹 채용담당자입니다.
+2026년 채용연계형 인턴 전환 채용 최종 면접에 합격하신 것을 진심으로 축하드립니다.
+
+원활한 입사 준비를 위해 아래 전용 링크를 통해 9월 18일(금) 오전 11:59까지 최종 입사 여부 회신을 부탁드립니다.
+
+■ 응답 기한: 2026년 9월 18일 (금) 오전 11:59 까지
+■ 입사 확인 링크: {개인별_고유_링크}
+■ 입사 안내 노션: https://app.notion.com/p/3db81225d75380f0bce9c116ca22486f?source=copy_link
+
+감사합니다.
+화신 채용담당자 드림`;
+            } else {
+                const c = candidatesData.find(item => item.id == selectVal);
+                if (!c) return;
+                const fullUrl = `${window.location.origin}/confirm/${c.token}`;
+                textarea.value = `[화신그룹] 2026년 정규직 전환 채용 최종 입사확인 안내
+
+안녕하세요, 화신그룹 채용담당자입니다.
+${c.name} 님의 정규직 전환 채용 최종 합격을 진심으로 축하드립니다.
+
+정규직 신입사원 입사 준비(사원증 제작 등)를 위해 아래 전용 확인 페이지에서 9월 18일(금) 오전 11:59까지 최종 입사 여부를 선택해 주시기 바랍니다.
+
+■ 대상자: ${c.name} 님
+■ 회신 기한: 2026년 9월 18일 (금) 오전 11:59 까지
+■ 최종 입사확인 페이지: ${fullUrl}
+■ 상세 입사 안내 가이드(Notion): https://app.notion.com/p/3db81225d75380f0bce9c116ca22486f?source=copy_link
+
+감사합니다.
+화신 채용담당자 드림`;
+            }
+        }
+
+        function copyMessageText() {
+            const text = document.getElementById('msg-preview-text').value;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('안내 메시지 문구가 복사되었습니다.');
+            });
+        }
+
+        // 초기 데이터 로드
+        loadCandidates();
+    </script>
+</body>
+</html>

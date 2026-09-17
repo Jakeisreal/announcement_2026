@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.sqlite
+confirmation.db
+.env
+venv/
+.idea/
+.vscode/
+*.xlsx.tmp

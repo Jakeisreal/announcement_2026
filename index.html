@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026년 화신그룹 정규직 전환 채용 최종 입사여부 확인</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        * { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
+        .hwashin-blue { background-color: #0d2b5c; }
+        .hwashin-text { color: #0d2b5c; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 pb-16 flex flex-col justify-between">
+
+    <!-- 상단 헤더 -->
+    <header class="hwashin-blue text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+                    <i class="fa-solid fa-building-circle-check text-xl text-blue-200"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold tracking-wider text-blue-200 uppercase">HWASHIN GROUP</span>
+                    <h1 class="text-base sm:text-lg font-bold">정규직 전환 채용 최종 입사확인</h1>
+                </div>
+            </div>
+            <div class="text-right flex items-center space-x-2">
+                <a href="https://app.notion.com/p/3db81225d75380f0bce9c116ca22486f?source=copy_link" target="_blank"
+                   class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-white/10 text-blue-100 hover:bg-white/20 transition-colors">
+                    <i class="fa-solid fa-book-open mr-1.5"></i> 노션 안내문
+                </a>
+                <a href="admin.html" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-blue-500/20 text-blue-100 border border-blue-400/30 hover:bg-blue-500/30 transition-colors">
+                    <i class="fa-solid fa-lock mr-1"></i> 관리자
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <main id="app-container" class="max-w-3xl mx-auto px-4 mt-6 w-full space-y-6">
+        <!-- JS 렌더링 영역 (로딩, 로그인, 폼, 완료, 마감) -->
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="text-center text-xs text-slate-400 py-6 border-t border-slate-200/60 mt-8">
+        © 2026 HWASHIN CO., LTD. All rights reserved. | 채용문의: 인사팀
+    </footer>
+
+    <!-- 커스텀 모달 다이얼로그 -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl text-center space-y-4">
+            <div id="modal-icon" class="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center text-2xl"></div>
+            <h3 id="modal-title" class="text-lg font-bold text-slate-900"></h3>
+            <p id="modal-desc" class="text-sm text-slate-600 leading-relaxed"></p>
+            <div class="flex space-x-3 pt-2">
+                <button type="button" onclick="closeModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm">
+                    취소
+                </button>
+                <button type="button" id="modal-confirm-btn" class="flex-1 py-3 text-white font-bold rounded-xl text-sm shadow-md">
+                    확인 및 제출
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 데이터 & 로직 스크립트 -->
+    <script>
+        const DEADLINE = new Date("2026-09-18T11:59:00+09:00").getTime();
+        const NOTION_URL = "https://app.notion.com/p/3db81225d75380f0bce9c116ca22486f?source=copy_link";
+
+        // 11명 합격자 데이터베이스 (부서/본부는 지원자 화면에서 완전히 숨겨집니다)
+        const DEFAULT_CANDIDATES = [
+            { id: 1, name: "김병희", english_name: "Kim, Byeonghee", phone: "010-2304-8259", email: "rlaqudgml44@naver.com", birthdate: "2002-01-07", uniform_size: "2XL(110)", dormitory_eligible: false, default_dormitory: "", token: "dd394fc093eaa147" },
+            { id: 2, name: "권석율", english_name: "Kwon, Seokyul", phone: "010-2785-8810", email: "ksy23160@naver.com", birthdate: "2002-05-10", uniform_size: "2XL(110)", dormitory_eligible: false, default_dormitory: "", token: "302cd54a93df1eb8" },
+            { id: 3, name: "김윤관", english_name: "Kim, Yungwan", phone: "010-7457-1173", email: "dbsrhks1173@naver.com", birthdate: "2000-05-03", uniform_size: "XL(105)", dormitory_eligible: false, default_dormitory: "", token: "25249993422cab00" },
+            { id: 4, name: "임성수", english_name: "Lim, Seongsu", phone: "010-9154-8619", email: "seongsuim498@gmail.com", birthdate: "2002-12-24", uniform_size: "XL(105)", dormitory_eligible: false, default_dormitory: "", token: "511475ea6f3b3a72" },
+            { id: 5, name: "김정동", english_name: "Kim, Jeongdong", phone: "010-6221-7293", email: "wsx7707@naver.com", birthdate: "2001-09-27", uniform_size: "L(100)", dormitory_eligible: false, default_dormitory: "", token: "68c6cc743ad1f379" },
+            { id: 6, name: "박기혁", english_name: "Park, Gihyeok", phone: "010-8647-2915", email: "qkrrlgur23@gmail.com", birthdate: "2001-12-06", uniform_size: "L(100)", dormitory_eligible: true, default_dormitory: "영천", token: "c1bdc296218e7b82" },
+            { id: 7, name: "조무승", english_name: "Cho, Museung", phone: "010-5069-3756", email: "jhk4640@naver.com", birthdate: "2001-08-13", uniform_size: "L(100)", dormitory_eligible: false, default_dormitory: "", token: "5d7e41b709d3bb17" },
+            { id: 8, name: "전세민", english_name: "Jeon, Semin", phone: "010-8914-8516", email: "jeonsm2534@gmail.com", birthdate: "2000-08-23", uniform_size: "XL(105)", dormitory_eligible: true, default_dormitory: "영천", token: "2d191782b2c1590e" },
+            { id: 9, name: "김수철", english_name: "Kim, Sucheol", phone: "010-4538-8281", email: "harvey30@naver.com", birthdate: "2001-05-09", uniform_size: "L(100)", dormitory_eligible: true, default_dormitory: "예산", token: "550452a76cd44f68" },
+            { id: 10, name: "강동진", english_name: "Kang, Dongjin", phone: "010-6583-8422", email: "jinny8422@gmail.com", birthdate: "2001-04-19", uniform_size: "L(100)", dormitory_eligible: true, default_dormitory: "영천", token: "e031b85284c0dc01" },
+            { id: 11, name: "강선우", english_name: "Kang, Seonwoo", phone: "010-3392-2125", email: "queen030720@naver.com", birthdate: "2003-07-20", uniform_size: "M(95)", dormitory_eligible: false, default_dormitory: "", token: "bd8b410dffd07a18" }
+        ];
+
+        // 로컬스토리지 상태 관리
+        function getStoredData() {
+            const saved = localStorage.getItem("hwashin_recruit_2026_data");
+            if (saved) {
+                try { return JSON.parse(saved); } catch(e) {}
+            }
+            return DEFAULT_CANDIDATES.map(c => ({
+                ...c,
+                status: "pending",
+                response_english_name: "",
+                response_uniform_size: "",
+                response_dormitory: "",
+                decline_reason: "",
+                decline_detail: "",
+                responded_at: ""
+            }));
+        }
+
+        function saveStoredData(data) {
+            localStorage.setItem("hwashin_recruit_2026_data", JSON.stringify(data));
+        }
+
+        let candidates = getStoredData();
+
+        // 현재 토큰 확인
+        function getTokenFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('t') || urlParams.get('token') || (window.location.hash ? window.location.hash.replace('#', '') : null);
+        }
+
+        let currentCandidate = null;
+
+        function init() {
+            const token = getTokenFromURL();
+            if (token) {
+                currentCandidate = candidates.find(c => c.token === token);
+                if (currentCandidate) {
+                    renderCandidateView(currentCandidate);
+                    return;
+                }
+            }
+            renderLoginView();
+        }
+
+        // 1. 로그인 뷰 (토큰 없을 때)
+        function renderLoginView() {
+            const container = document.getElementById('app-container');
+            container.innerHTML = `
+                <div class="max-w-md mx-auto bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+                    <div class="text-center space-y-2">
+                        <div class="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl mx-auto">
+                            <i class="fa-solid fa-user-check"></i>
+                        </div>
+                        <h2 class="text-xl font-black text-slate-900">최종 입사확인 본인 인증</h2>
+                        <p class="text-xs text-slate-500 leading-relaxed">
+                            문자 또는 메일로 전달받으신 <strong>성명</strong>과 <strong>연락처(휴대폰 번호)</strong>를 입력해 주십시오.
+                        </p>
+                    </div>
+
+                    <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">성명</label>
+                            <input type="text" id="login-name" required placeholder="예: 김병희"
+                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">연락처 (휴대폰 번호)</label>
+                            <input type="text" id="login-phone" required placeholder="예: 010-2304-8259 또는 뒷 4자리"
+                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white">
+                        </div>
+
+                        <button type="submit" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-colors text-sm">
+                            본인 확인 및 입장하기
+                        </button>
+                    </form>
+
+                    <div class="pt-4 border-t border-slate-100 text-center">
+                        <a href="${NOTION_URL}" target="_blank"
+                           class="text-xs text-slate-500 hover:text-blue-600 flex items-center justify-center">
+                            <i class="fa-solid fa-book-open mr-1.5"></i> 화신그룹 정규직 전환 안내 가이드 (Notion)
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('login-name').value.trim();
+            const phoneDigits = document.getElementById('login-phone').value.trim().replace(/[^0-9]/g, '');
+
+            const match = candidates.find(c => {
+                if (c.name !== name) return false;
+                const cDigits = c.phone.replace(/[^0-9]/g, '');
+                return cDigits.includes(phoneDigits) || cDigits.endsWith(phoneDigits);
+            });
+
+            if (match) {
+                window.location.search = `?t=${match.token}`;
+            } else {
+                alert('입력하신 정보와 일치하는 대상자를 찾을 수 없습니다. 성명과 연락처를 다시 확인해 주십시오.');
+            }
+        }
+
+        // 2. 지원자 응답 폼 뷰 (본부/부서 완전 비노출)
+        function renderCandidateView(c) {
+            const isClosed = new Date().getTime() > DEADLINE;
+            const container = document.getElementById('app-container');
+
+            if (isClosed) {
+                renderClosedView(c);
+                return;
+            }
+
+            container.innerHTML = `
+                <!-- 마감 카운트다운 배너 -->
+                <div id="countdown-banner" class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white rounded-2xl p-4 sm:p-5 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-hourglass-half text-lg animate-pulse"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-red-100 font-medium">응답 제출 마감 기한</div>
+                            <div class="text-sm sm:text-base font-bold">2026년 9월 18일 (금) 오전 11:59 까지</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 bg-black/25 px-4 py-2 rounded-xl backdrop-blur-sm">
+                        <div class="text-center">
+                            <span id="timer-hours" class="text-xl font-mono font-black">00</span>
+                            <span class="text-[10px] block text-red-200">시간</span>
+                        </div>
+                        <span class="text-xl font-bold text-red-300">:</span>
+                        <div class="text-center">
+                            <span id="timer-minutes" class="text-xl font-mono font-black">00</span>
+                            <span class="text-[10px] block text-red-200">분</span>
+                        </div>
+                        <span class="text-xl font-bold text-red-300">:</span>
+                        <div class="text-center">
+                            <span id="timer-seconds" class="text-xl font-mono font-black">00</span>
+                            <span class="text-[10px] block text-red-200">초</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 합격 축하 및 노션 배너 -->
+                <div class="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-sm">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 text-2xl">
+                            🎉
+                        </div>
+                        <div class="flex-1">
+                            <h2 class="text-lg font-bold text-slate-900">
+                                <span class="text-blue-600">${c.name}</span> 님, 화신그룹 최종 합격을 진심으로 축하드립니다!
+                            </h2>
+                            <p class="text-sm text-slate-600 mt-1 leading-relaxed">
+                                그동안의 인턴 근무와 정규직 전환 전형에 성실히 임해주셔서 감사합니다. 
+                                입사 진행을 위한 최종 확인 절차를 진행하오니, 기한 내에 정확한 입사 의사 및 확인 정보를 회신해 주시기 바랍니다.
+                            </p>
+                            <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                                <span class="text-xs text-slate-500 flex items-center">
+                                    <i class="fa-solid fa-circle-info text-blue-500 mr-1.5"></i>
+                                    출근 일정 및 입사 준비 상세 안내는 노션 가이드에서 확인하실 수 있습니다.
+                                </span>
+                                <a href="${NOTION_URL}" target="_blank" 
+                                   class="inline-flex items-center text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
+                                    <i class="fa-solid fa-book-open mr-1.5"></i> 정규직 전환 안내 가이드 (Notion) 열기
+                                    <i class="fa-solid fa-arrow-up-right-from-square ml-1.5 text-[10px]"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                ${c.status !== 'pending' ? `
+                <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 shadow-sm flex items-center space-x-3 text-amber-800">
+                    <i class="fa-solid fa-circle-check text-2xl text-amber-600 shrink-0"></i>
+                    <div>
+                        <h3 class="font-bold">이미 입사 확인 응답이 제출되었습니다.</h3>
+                        <p class="text-xs text-amber-700 mt-0.5">
+                            제출 상태: <strong>${c.status === 'accepted' ? '입사 희망 (수락)' : '입사 포기'}</strong> 
+                            ${c.responded_at ? `(제출일시: ${c.responded_at})` : ''}
+                        </p>
+                        <p class="text-xs text-amber-600 mt-1">※ 마감 시간 전까지는 아래 폼을 통해 응답 내용을 수정하여 다시 제출하실 수 있습니다.</p>
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- 응답 폼 -->
+                <form id="confirm-form" class="space-y-6">
+                    
+                    <!-- 1. 기본 인적사항 (본부/부서 비노출) -->
+                    <div class="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-sm">
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                            <h3 class="text-base font-bold text-slate-900 flex items-center">
+                                <i class="fa-solid fa-user-check text-blue-600 mr-2"></i>
+                                1. 본인 기본정보 확인
+                            </h3>
+                            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded font-medium">본인 확인 완료</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 text-sm">
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <span class="text-xs text-slate-500 block">성명</span>
+                                <span class="font-bold text-slate-800 text-base">${c.name}</span>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <span class="text-xs text-slate-500 block">연락처</span>
+                                <span class="font-medium text-slate-800">${c.phone}</span>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <span class="text-xs text-slate-500 block">이메일</span>
+                                <span class="font-medium text-slate-800">${c.email || '-'}</span>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <span class="text-xs text-slate-500 block">생년월일</span>
+                                <span class="font-medium text-slate-800">${c.birthdate || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. 입사 여부 선택 -->
+                    <div class="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-sm">
+                        <div class="pb-3 border-b border-slate-100">
+                            <h3 class="text-base font-bold text-slate-900 flex items-center">
+                                <i class="fa-solid fa-circle-question text-blue-600 mr-2"></i>
+                                2. 최종 입사 여부 선택 <span class="text-red-500 ml-1">*</span>
+                            </h3>
+                            <p class="text-xs text-slate-500 mt-1">2026년 정규직 신입사원 입사 여부를 선택해 주십시오.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                            <!-- 입사 희망 카드 -->
+                            <label id="card-accept" class="relative flex flex-col p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md
+                                ${c.status === 'accepted' ? 'border-blue-600 bg-blue-50/50' : 'border-slate-200 bg-white hover:border-blue-300'}">
+                                <input type="radio" name="status" value="accepted" class="sr-only" onchange="handleStatusChange('accepted')"
+                                       ${c.status === 'accepted' ? 'checked' : ''} required>
+                                <div class="flex items-center justify-between">
+                                    <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold">
+                                        <i class="fa-solid fa-check"></i>
+                                    </div>
+                                    <span id="badge-accept" class="text-xs font-bold px-2.5 py-1 rounded-full ${c.status === 'accepted' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}">
+                                        입사 확정
+                                    </span>
+                                </div>
+                                <div class="mt-4">
+                                    <h4 class="font-bold text-slate-900 text-base">입사 희망 (수락)</h4>
+                                    <p class="text-xs text-slate-500 mt-1">화신그룹 정규직 신입사원으로 입사하여 근무를 희망합니다.</p>
+                                </div>
+                            </label>
+
+                            <!-- 입사 포기 카드 -->
+                            <label id="card-decline" class="relative flex flex-col p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md
+                                ${c.status === 'declined' ? 'border-rose-500 bg-rose-50/50' : 'border-slate-200 bg-white hover:border-rose-300'}">
+                                <input type="radio" name="status" value="declined" class="sr-only" onchange="handleStatusChange('declined')"
+                                       ${c.status === 'declined' ? 'checked' : ''}>
+                                <div class="flex items-center justify-between">
+                                    <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl font-bold">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </div>
+                                    <span id="badge-decline" class="text-xs font-bold px-2.5 py-1 rounded-full ${c.status === 'declined' ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-400'}">
+                                        입사 포기
+                                    </span>
+                                </div>
+                                <div class="mt-4">
+                                    <h4 class="font-bold text-slate-900 text-base">입사 포기</h4>
+                                    <p class="text-xs text-slate-500 mt-1">개인 사정 등으로 인하여 부득이하게 입사를 포기합니다.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 3. [입사 희망 시] 상세 입력란 -->
+                    <div id="accept-section" class="space-y-6 ${c.status === 'accepted' ? '' : 'hidden'}">
+                        
+                        <div class="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+                            <div class="pb-3 border-b border-slate-100">
+                                <h3 class="text-base font-bold text-slate-900 flex items-center">
+                                    <i class="fa-solid fa-id-card text-blue-600 mr-2"></i>
+                                    3. 사원증 제작 및 입사 준비 정보 확인
+                                </h3>
+                                <p class="text-xs text-slate-500 mt-1">사원증, 명함 및 근무복 지급을 위해 정보를 정확히 확인해 주십시오.</p>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">
+                                        사원증 / 명함 표기 영문 성명 (Last Name, First Name) <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="response_english_name" 
+                                           value="${c.response_english_name || c.english_name || ''}"
+                                           placeholder="예: KIM, BYEONGHEE" 
+                                           class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white font-mono uppercase">
+                                    <span class="text-[11px] text-slate-400 mt-1 block">※ 대문자 영문으로 표기되며, 여권 상 영문명과 동일하게 기재하는 것을 권장합니다.</span>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">
+                                        근무복 사이즈 선택 <span class="text-red-500">*</span>
+                                    </label>
+                                    <select id="response_uniform_size" 
+                                            class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white">
+                                        ${['S(90)', 'M(95)', 'L(100)', 'XL(105)', '2XL(110)', '3XL(115)'].map(sz => `
+                                            <option value="${sz}" ${(c.response_uniform_size || c.uniform_size || '').includes(sz.split('(')[0]) || (c.response_uniform_size || c.uniform_size) === sz ? 'selected' : ''}>${sz}</option>
+                                        `).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 기숙사 조건부 노출 -->
+                        ${c.dormitory_eligible ? `
+                        <div class="bg-indigo-50/50 border-2 border-indigo-200 rounded-2xl p-5 sm:p-6 shadow-sm">
+                            <div class="pb-3 border-b border-indigo-100">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-base font-bold text-indigo-950 flex items-center">
+                                        <i class="fa-solid fa-hotel text-indigo-600 mr-2"></i>
+                                        4. 사내 기숙사 입주 신청 (대상자 확인)
+                                    </h3>
+                                    <span class="text-xs bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full font-bold">기숙사 신청 대상자</span>
+                                </div>
+                                <p class="text-xs text-indigo-700/80 mt-1">원거리 거주자 등을 위한 기숙사 신청 대상자입니다. 입주 희망 여부를 선택해 주십시오.</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+                                <label class="flex items-center p-3.5 bg-white border border-indigo-200 rounded-xl cursor-pointer hover:border-indigo-400 transition-colors">
+                                    <input type="radio" name="response_dormitory" value="영천 기숙사 신청" 
+                                           ${(c.response_dormitory || c.default_dormitory).includes('영천') ? 'checked' : ''}
+                                           class="text-indigo-600 focus:ring-indigo-500 mr-2.5">
+                                    <span class="text-sm font-medium text-slate-800">영천 기숙사 신청</span>
+                                </label>
+                                <label class="flex items-center p-3.5 bg-white border border-indigo-200 rounded-xl cursor-pointer hover:border-indigo-400 transition-colors">
+                                    <input type="radio" name="response_dormitory" value="예산공장 기숙사 신청" 
+                                           ${(c.response_dormitory || c.default_dormitory).includes('예산') ? 'checked' : ''}
+                                           class="text-indigo-600 focus:ring-indigo-500 mr-2.5">
+                                    <span class="text-sm font-medium text-slate-800">예산공장 기숙사 신청</span>
+                                </label>
+                                <label class="flex items-center p-3.5 bg-white border border-indigo-200 rounded-xl cursor-pointer hover:border-indigo-400 transition-colors">
+                                    <input type="radio" name="response_dormitory" value="기숙사 미신청 (통근/자취)" 
+                                           ${(c.response_dormitory || '').includes('미신청') ? 'checked' : ''}
+                                           class="text-indigo-600 focus:ring-indigo-500 mr-2.5">
+                                    <span class="text-sm font-medium text-slate-800">기숙사 미신청 (통근/자취)</span>
+                                </label>
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <!-- 서약 체크 -->
+                        <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+                            <label class="flex items-start space-x-3 cursor-pointer">
+                                <input type="checkbox" id="pledge_check" class="mt-1 w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                                <div class="text-xs text-slate-600 leading-relaxed">
+                                    <span class="font-bold text-slate-800 block mb-0.5">입사 서약 및 성실 근무 확인</span>
+                                    본인은 화신그룹 2026년 정규직 신입사원으로 입사할 것을 확인하며, 
+                                    회사에서 안내한 일정에 맞춰 입사 서류 제출 및 출근 준비를 성실히 이행할 것을 서약합니다.
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 4. [입사 포기 시] 사유 입력 -->
+                    <div id="decline-section" class="bg-white border border-rose-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4 ${c.status === 'declined' ? '' : 'hidden'}">
+                        <div class="pb-3 border-b border-rose-100">
+                            <h3 class="text-base font-bold text-rose-900 flex items-center">
+                                <i class="fa-solid fa-comment-slash text-rose-600 mr-2"></i>
+                                입사 포기 사유 확인
+                            </h3>
+                            <p class="text-xs text-slate-500 mt-1">원활한 채용 운영을 위해 입사 포기 사유를 솔직하게 작성해 주시면 감사하겠습니다.</p>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1.5">
+                                    포기 사유 분류 <span class="text-red-500">*</span>
+                                </label>
+                                <select id="decline_reason" 
+                                        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white">
+                                    <option value="">사유를 선택해 주세요</option>
+                                    <option value="타사 취업" ${c.decline_reason === '타사 취업' ? 'selected' : ''}>타사 취업 (타 기업 합격)</option>
+                                    <option value="학업 및 진학" ${c.decline_reason === '학업 및 진학' ? 'selected' : ''}>학업 지속 / 대학원 진학</option>
+                                    <option value="개인 및 건강 사정" ${c.decline_reason === '개인 및 건강 사정' ? 'selected' : ''}>개인 사정 / 건강 / 거주지 이전</option>
+                                    <option value="직무 및 근무조건" ${c.decline_reason === '직무 및 근무조건' ? 'selected' : ''}>직무 적성 및 근무 환경 사유</option>
+                                    <option value="기타" ${c.decline_reason === '기타' ? 'selected' : ''}>기타 사유 (직접 입력)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1.5">상세 사유 (선택 사항)</label>
+                                <textarea id="decline_detail" rows="3" 
+                                          placeholder="상세한 사유나 회사에 전하고 싶으신 말씀이 있다면 기재해 주세요." 
+                                          class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white resize-none">${c.decline_detail || ''}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 제출 버튼 -->
+                    <div class="pt-4">
+                        <button type="button" onclick="submitCandidateResponse()" 
+                                class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center space-x-2 text-base">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>최종 응답 제출하기</span>
+                        </button>
+                        <p class="text-center text-xs text-slate-400 mt-2">
+                            제출 후에도 9월 18일 11:59 마감 전까지는 본 링크를 통해 재수정이 가능합니다.
+                        </p>
+                    </div>
+                </form>
+            `;
+
+            startCountdown();
+        }
+
+        function startCountdown() {
+            function update() {
+                const now = new Date().getTime();
+                const diff = DEADLINE - now;
+                const h = document.getElementById('timer-hours');
+                const m = document.getElementById('timer-minutes');
+                const s = document.getElementById('timer-seconds');
+                if (!h || !m || !s) return;
+
+                if (diff <= 0) {
+                    h.innerText = '00'; m.innerText = '00'; s.innerText = '00';
+                    renderClosedView(currentCandidate);
+                    return;
+                }
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                h.innerText = String(hours).padStart(2, '0');
+                m.innerText = String(minutes).padStart(2, '0');
+                s.innerText = String(seconds).padStart(2, '0');
+            }
+            setInterval(update, 1000);
+            update();
+        }
+
+        function handleStatusChange(status) {
+            const acceptCard = document.getElementById('card-accept');
+            const declineCard = document.getElementById('card-decline');
+            const acceptBadge = document.getElementById('badge-accept');
+            const declineBadge = document.getElementById('badge-decline');
+            const acceptSec = document.getElementById('accept-section');
+            const declineSec = document.getElementById('decline-section');
+
+            if (status === 'accepted') {
+                acceptCard.className = "relative flex flex-col p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md border-blue-600 bg-blue-50/50";
+                declineCard.className = "relative flex flex-col p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md border-slate-200 bg-white hover:border-rose-300";
+                acceptBadge.className = "text-xs font-bold px-2.5 py-1 rounded-full bg-blue-600 text-white";
+                declineBadge.className = "text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-400";
+                acceptSec.classList.remove('hidden');
+                declineSec.classList.add('hidden');
+            } else {
+                acceptCard.className = "relative flex flex-col p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md border-slate-200 bg-white hover:border-blue-300";
+                declineCard.className = "relative flex flex-col p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md border-rose-500 bg-rose-50/50";
+                acceptBadge.className = "text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-400";
+                declineBadge.className = "text-xs font-bold px-2.5 py-1 rounded-full bg-rose-600 text-white";
+                acceptSec.classList.add('hidden');
+                declineSec.classList.remove('hidden');
+            }
+        }
+
+        function openModal(title, desc, iconBg, iconColor, iconHtml, confirmBtnBg, onConfirm) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = desc;
+            const iconDiv = document.getElementById('modal-icon');
+            iconDiv.className = `w-14 h-14 rounded-2xl mx-auto flex items-center justify-center text-2xl ${iconBg} ${iconColor}`;
+            iconDiv.innerHTML = iconHtml;
+            const btn = document.getElementById('modal-confirm-btn');
+            btn.className = `flex-1 py-3 text-white font-bold rounded-xl text-sm shadow-md ${confirmBtnBg}`;
+            btn.onclick = onConfirm;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+        }
+
+        function submitCandidateResponse() {
+            const form = document.getElementById('confirm-form');
+            const status = form.querySelector('input[name="status"]:checked')?.value;
+
+            if (!status) {
+                alert('최종 입사 여부(입사 희망 / 입사 포기)를 선택해 주십시오.');
+                return;
+            }
+
+            if (status === 'accepted') {
+                const engName = document.getElementById('response_english_name').value.trim();
+                const uniformSize = document.getElementById('response_uniform_size').value;
+                const pledge = document.getElementById('pledge_check')?.checked;
+
+                if (!engName) {
+                    alert('사원증/명함용 영문 성명을 입력해 주십시오.');
+                    document.getElementById('response_english_name').focus();
+                    return;
+                }
+
+                if (!pledge) {
+                    alert('입사 서약 및 성실 근무 확인란에 체크해 주십시오.');
+                    return;
+                }
+
+                const dormRadio = form.querySelector('input[name="response_dormitory"]:checked');
+                const dormVal = dormRadio ? dormRadio.value : '';
+
+                openModal(
+                    '입사 희망(수락) 최종 제출',
+                    '화신그룹 정규직 신입사원으로 입사 희망 의사를 최종 제출하시겠습니까?',
+                    'bg-blue-100', 'text-blue-600', '<i class="fa-solid fa-check"></i>',
+                    'bg-blue-600 hover:bg-blue-700',
+                    () => doCommit({
+                        status: 'accepted',
+                        response_english_name: engName,
+                        response_uniform_size: uniformSize,
+                        response_dormitory: dormVal
+                    })
+                );
+
+            } else if (status === 'declined') {
+                const declineReason = document.getElementById('decline_reason').value;
+                const declineDetail = document.getElementById('decline_detail').value.trim();
+
+                if (!declineReason) {
+                    alert('입사 포기 사유 분류를 선택해 주십시오.');
+                    document.getElementById('decline_reason').focus();
+                    return;
+                }
+
+                openModal(
+                    '입사 포기 최종 제출',
+                    '입사 포기 의사를 최종 제출하시겠습니까? 제출된 의사는 채용 운영에 즉시 반영됩니다.',
+                    'bg-rose-100', 'text-rose-600', '<i class="fa-solid fa-triangle-exclamation"></i>',
+                    'bg-rose-600 hover:bg-rose-700',
+                    () => doCommit({
+                        status: 'declined',
+                        decline_reason: declineReason,
+                        decline_detail: declineDetail
+                    })
+                );
+            }
+        }
+
+        function doCommit(payload) {
+            closeModal();
+            const nowStr = new Date().toLocaleString('ko-KR');
+            
+            // Update in local array
+            const idx = candidates.findIndex(c => c.token === currentCandidate.token);
+            if (idx !== -1) {
+                candidates[idx] = {
+                    ...candidates[idx],
+                    ...payload,
+                    responded_at: nowStr
+                };
+                saveStoredData(candidates);
+                currentCandidate = candidates[idx];
+            }
+
+            renderCompleteView(currentCandidate);
+        }
+
+        // 3. 완료 화면
+        function renderCompleteView(c) {
+            const container = document.getElementById('app-container');
+            container.innerHTML = `
+                <div class="max-w-xl mx-auto bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-lg text-center space-y-5">
+                    
+                    ${c.status === 'accepted' ? `
+                    <div class="w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mx-auto shadow-inner">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">입사 확정 접수</span>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-2">
+                            입사 확인 응답이 정상 접수되었습니다!
+                        </h2>
+                        <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+                            <strong class="text-slate-800">${c.name}</strong> 님의 화신그룹 정규직 신입사원 입사 의사가 성공적으로 등록되었습니다.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 text-left text-xs space-y-2.5">
+                        <div class="flex justify-between pb-2 border-b border-slate-200/60 font-semibold text-slate-700">
+                            <span>응답 접수 일시</span>
+                            <span class="text-slate-900 font-mono">${c.responded_at || '방금 전'}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">사원증 영문명</span>
+                            <span class="font-bold text-slate-800 font-mono">${c.response_english_name || c.english_name || '-'}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">근무복 사이즈</span>
+                            <span class="font-bold text-slate-800">${c.response_uniform_size || c.uniform_size}</span>
+                        </div>
+                        ${c.dormitory_eligible && c.response_dormitory ? `
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">기숙사 신청</span>
+                            <span class="font-bold text-indigo-700">${c.response_dormitory}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="pt-2">
+                        <a href="${NOTION_URL}" target="_blank"
+                           class="block w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base">
+                            <div class="flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-book-open"></i>
+                                <span>화신그룹 정규직 전환 안내 페이지 (Notion) 바로가기</span>
+                                <i class="fa-solid fa-arrow-right text-xs"></i>
+                            </div>
+                        </a>
+                        <p class="text-[11px] text-slate-400 mt-2">
+                            입사 준비 서류, 출근 일정 및 주요 안내사항은 위 노션 페이지에서 확인하실 수 있습니다.
+                        </p>
+                    </div>
+                    ` : `
+                    <div class="w-20 h-20 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-3xl mx-auto shadow-inner">
+                        <i class="fa-solid fa-file-circle-check"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-rose-600 bg-rose-50 px-3 py-1 rounded-full uppercase tracking-wider">입사 포기 접수</span>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-2">
+                            입사 포기 의사가 접수되었습니다
+                        </h2>
+                        <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+                            그동안 화신과 함께 해주셔서 감사드리며, <strong class="text-slate-800">${c.name}</strong> 님의 앞날에 늘 건승과 행복이 가득하기를 기원합니다.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 text-left text-xs space-y-2">
+                        <div class="flex justify-between pb-2 border-b border-slate-200/60 font-semibold text-slate-700">
+                            <span>응답 접수 일시</span>
+                            <span class="text-slate-900 font-mono">${c.responded_at || '방금 전'}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">포기 사유</span>
+                            <span class="font-bold text-rose-700">${c.decline_reason}</span>
+                        </div>
+                    </div>
+                    `}
+
+                    <div class="pt-4 border-t border-slate-100">
+                        <button onclick="renderCandidateView(currentCandidate)" class="text-xs text-slate-500 hover:text-blue-600 underline font-medium">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> 응답 내용 다시 확인하거나 수정하기
+                        </button>
+                    </div>
+
+                </div>
+            `;
+        }
+
+        // 4. 마감 화면
+        function renderClosedView(c) {
+            const container = document.getElementById('app-container');
+            container.innerHTML = `
+                <div class="max-w-xl mx-auto bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-lg text-center space-y-5">
+                    <div class="w-20 h-20 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-3xl mx-auto shadow-inner">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-wider">접수 기한 종료</span>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-2">
+                            입사 확인 응답 기한이 마감되었습니다.
+                        </h2>
+                        <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+                            본 채용의 최종 입사여부 확인 응답 기한은 <strong>2026년 9월 18일 (금) 오전 11:59</strong>까지였습니다.<br>
+                            관련하여 추가 문의사항이나 변동사항이 있으실 경우 인사팀 채용담당자에게 직접 연락 주시기 바랍니다.
+                        </p>
+                    </div>
+
+                    ${c && c.status !== 'pending' ? `
+                    <div class="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 text-left text-xs space-y-2">
+                        <div class="flex justify-between pb-2 border-b border-slate-200/60 font-semibold text-slate-700">
+                            <span>${c.name} 님의 기존 제출 내역</span>
+                            <span class="font-mono text-slate-500">${c.responded_at || '-'}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">최종 응답</span>
+                            <span class="font-bold ${c.status === 'accepted' ? 'text-blue-600' : 'text-rose-600'}">
+                                ${c.status === 'accepted' ? '입사 희망 (수락)' : '입사 포기'}
+                            </span>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <div class="pt-4 border-t border-slate-100">
+                        <a href="${NOTION_URL}" target="_blank"
+                           class="inline-flex items-center justify-center w-full py-3.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-2xl text-sm transition-colors">
+                            <i class="fa-solid fa-book-open mr-2"></i> 정규직 전환 안내 가이드 (Notion) 열기
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 실행
+        init();
+    </script>
+</body>
+</html>

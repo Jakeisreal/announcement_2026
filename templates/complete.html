@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>입사 확인 응답 제출 완료 - 화신그룹</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        * { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
+        .hwashin-blue { background-color: #0d2b5c; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col justify-between">
+
+    <header class="hwashin-blue text-white shadow-md">
+        <div class="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-building-circle-check text-xl text-blue-200"></i>
+                <h1 class="text-base font-bold">화신그룹 정규직 전환 채용</h1>
+            </div>
+            <span class="text-xs text-blue-200 font-medium">제출 완료</span>
+        </div>
+    </header>
+
+    <main class="max-w-xl mx-auto px-4 py-8 w-full space-y-6">
+        
+        <div class="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-lg text-center space-y-5">
+            
+            {% if candidate.status == 'accepted' %}
+            <div class="w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mx-auto shadow-inner">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">입사 확정 접수</span>
+                <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-2">
+                    입사 확인 응답이 정상 접수되었습니다!
+                </h2>
+                <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+                    <strong class="text-slate-800">{{ candidate.name }}</strong> 님의 화신그룹 정규직 신입사원 입사 의사가 성공적으로 등록되었습니다.
+                </p>
+            </div>
+
+            <!-- 접수 요약 카드 -->
+            <div class="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 text-left text-xs space-y-2.5">
+                <div class="flex justify-between pb-2 border-b border-slate-200/60 font-semibold text-slate-700">
+                    <span>응답 접수 일시</span>
+                    <span class="text-slate-900 font-mono">{{ candidate.responded_at }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">사원증 영문명</span>
+                    <span class="font-bold text-slate-800 font-mono">{{ candidate.response_english_name or candidate.english_name }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">근무복 사이즈</span>
+                    <span class="font-bold text-slate-800">{{ candidate.response_uniform_size or candidate.uniform_size }}</span>
+                </div>
+                {% if candidate.dormitory_eligible and candidate.response_dormitory %}
+                <div class="flex justify-between">
+                    <span class="text-slate-500">기숙사 신청</span>
+                    <span class="font-bold text-indigo-700">{{ candidate.response_dormitory }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- 노션 입사 안내 바로가기 CTA -->
+            <div class="pt-2">
+                <a href="https://app.notion.com/p/3db81225d75380f0bce9c116ca22486f?source=copy_link" target="_blank"
+                   class="block w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base">
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span>화신그룹 정규직 전환 안내 페이지 (Notion) 바로가기</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </div>
+                </a>
+                <p class="text-[11px] text-slate-400 mt-2">
+                    입사 준비 서류, 출근 일정 및 주요 안내사항은 위 노션 페이지에서 확인하실 수 있습니다.
+                </p>
+            </div>
+
+            {% else %}
+            <div class="w-20 h-20 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-3xl mx-auto shadow-inner">
+                <i class="fa-solid fa-file-circle-check"></i>
+            </div>
+            <div>
+                <span class="text-xs font-bold text-rose-600 bg-rose-50 px-3 py-1 rounded-full uppercase tracking-wider">입사 포기 접수</span>
+                <h2 class="text-xl sm:text-2xl font-black text-slate-900 mt-2">
+                    입사 포기 의사가 접수되었습니다
+                </h2>
+                <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+                    그동안 화신과 함께 해주셔서 감사드리며, <strong class="text-slate-800">{{ candidate.name }}</strong> 님의 앞날에 늘 건승과 행복이 가득하기를 기원합니다.
+                </p>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 text-left text-xs space-y-2">
+                <div class="flex justify-between pb-2 border-b border-slate-200/60 font-semibold text-slate-700">
+                    <span>응답 접수 일시</span>
+                    <span class="text-slate-900 font-mono">{{ candidate.responded_at }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">포기 사유</span>
+                    <span class="font-bold text-rose-700">{{ candidate.decline_reason }}</span>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="pt-4 border-t border-slate-100">
+                <a href="/confirm/{{ candidate.token }}" class="text-xs text-slate-500 hover:text-blue-600 underline font-medium">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> 응답 내용 다시 확인하거나 수정하기
+                </a>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer class="text-center text-xs text-slate-400 py-6 border-t border-slate-200/60">
+        © 2026 HWASHIN CO., LTD. All rights reserved. | 채용문의: 인사팀
+    </footer>
+
+</body>
+</html>
