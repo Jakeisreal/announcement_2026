@@ -111,6 +111,10 @@
                 <button onclick="openMessageModal()" class="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-xl transition-colors flex items-center">
                     <i class="fa-solid fa-envelope-open-text mr-1.5"></i> 이메일 / 안내 문구 생성기
                 </button>
+                <!-- 구글 시트 실시간 연동 버튼 -->
+                <button onclick="openCloudSyncModal()" class="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs rounded-xl transition-colors flex items-center border border-emerald-300">
+                    <i class="fa-solid fa-table mr-1.5"></i> 구글 시트 실시간 연동
+                </button>
                 <!-- 초기화 버튼 -->
                 <button onclick="confirmResetAll()" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl transition-colors flex items-center border border-rose-200">
                     <i class="fa-solid fa-trash-arrow-up mr-1.5"></i> 응답 데이터 전체 초기화
@@ -283,10 +287,73 @@
         setInterval(updateCountdown, 1000);
         updateCountdown();
 
-        function loadData() {
+        const DEFAULT_CLOUD_API_URL = "https://script.google.com/macros/s/AKfycby4ub1UJdudh5hR6jMPA4lpsi6usL-mtZQDohf7veVafyStyo0LwQhgkDeIpBzLDDky/exec";
+        let CLOUD_API_URL = localStorage.getItem("hwashin_cloud_api_url") || DEFAULT_CLOUD_API_URL;
+
+        async function loadData() {
             candidates = getStoredData();
+
+            // 구글 시트 / 클라우드에서 실시간 데이터 가져오기
+            if (CLOUD_API_URL) {
+                try {
+                    const res = await fetch(CLOUD_API_URL);
+                    const json = await res.json();
+                    if (json.data && Array.isArray(json.data)) {
+                        json.data.forEach(item => {
+                            const match = candidates.find(c => c.token === item.token || (c.name === item.name && item.name));
+                            if (match && item.status) {
+                                match.status = item.status || match.status;
+                                match.response_english_name = item.response_english_name || match.response_english_name;
+                                match.response_uniform_size = item.response_uniform_size || match.response_uniform_size;
+                                match.response_dormitory = item.response_dormitory || match.response_dormitory;
+                                match.decline_reason = item.decline_reason || match.decline_reason;
+                                match.decline_detail = item.decline_detail || match.decline_detail;
+                                match.responded_at = item.responded_at || match.responded_at;
+                            }
+                        });
+                        saveStoredData(candidates);
+                    }
+                } catch(e) {
+                    console.log("Cloud sync load error:", e);
+                }
+            }
+
             renderKPI();
             renderTable();
+        }
+
+        // 10초마다 구글 시트 데이터 실시간 자동 갱신
+        setInterval(loadData, 10000);
+
+        function openCloudSyncModal() {
+            const curUrl = localStorage.getItem("hwashin_cloud_api_url") || DEFAULT_CLOUD_API_URL;
+            const newUrl = prompt("구글 스프레드시트 Apps Script 웹 앱 배포 URL을 입력하세요:\n(기본 연결: 화신 입사확인 구글 스프레드시트)", curUrl);
+            if (newUrl !== null) {
+                localStorage.setItem("hwashin_cloud_api_url", newUrl.trim());
+                CLOUD_API_URL = newUrl.trim();
+                alert(CLOUD_API_URL ? "구글 시트 실시간 연동이 설정되었습니다." : "구글 시트 연동이 해제되었습니다.");
+                loadData();
+            }
+        }
+
+        function confirmResetAll() {
+            if (confirm("정말로 모든 지원자의 응답 데이터를 초기화하시겠습니까?\n(모든 응답이 '미응답(대기)' 상태로 되돌아갑니다)")) {
+                const resetData = DEFAULT_CANDIDATES.map(c => ({
+                    ...c,
+                    status: "pending",
+                    response_english_name: "",
+                    response_uniform_size: "",
+                    response_dormitory: "",
+                    decline_reason: "",
+                    decline_detail: "",
+                    responded_at: ""
+                }));
+                saveStoredData(resetData);
+                candidates = resetData;
+                renderKPI();
+                renderTable();
+                alert("로컬 대시보드 응답 데이터가 초기화되었습니다.");
+            }
         }
 
         function renderKPI() {

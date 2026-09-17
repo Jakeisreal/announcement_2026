@@ -71,6 +71,9 @@
     <script>
         const DEADLINE = new Date("2026-09-18T11:59:00+09:00").getTime();
         const NOTION_URL = "https://dull-chip-592.notion.site/3db81225d75380f0bce9c116ca22486f?source=copy_link";
+        // 구글 시트 / 클라우드 실시간 연동 URL (모든 지원자의 응답이 중앙 구글 시트로 자동 전송됨)
+        const DEFAULT_CLOUD_API_URL = "https://script.google.com/macros/s/AKfycby4ub1UJdudh5hR6jMPA4lpsi6usL-mtZQDohf7veVafyStyo0LwQhgkDeIpBzLDDky/exec";
+        let CLOUD_API_URL = localStorage.getItem("hwashin_cloud_api_url") || DEFAULT_CLOUD_API_URL;
 
         // 11명 합격자 + 홍길동(테스트용) 데이터베이스
         const DEFAULT_CANDIDATES = [
@@ -643,6 +646,22 @@
                 };
                 saveStoredData(candidates);
                 currentCandidate = candidates[idx];
+            }
+
+            // 구글 시트 / 클라우드 실시간 전송
+            if (CLOUD_API_URL) {
+                try {
+                    fetch(CLOUD_API_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            token: currentCandidate.token,
+                            name: currentCandidate.name,
+                            ...payload
+                        })
+                    }).catch(err => console.log('Cloud sync error:', err));
+                } catch(e) {}
             }
 
             renderCompleteView(currentCandidate);
