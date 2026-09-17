@@ -5,7 +5,7 @@
 - **응답 마감 기한**: **2026년 9월 18일 (금) 오전 11:59:00 (KST)**
 - **온라인 서비스 주소**: [https://jakeisreal.github.io/announcement_2026/](https://jakeisreal.github.io/announcement_2026/)
 - **관리자 대시보드 주소**: [https://jakeisreal.github.io/announcement_2026/admin.html](https://jakeisreal.github.io/announcement_2026/admin.html)
-- **화신 정규직 전환 안내 가이드 (Notion)**: [https://app.notion.com/p/3db81225d75380f0bce9c116ca22486f?source=copy_link](https://app.notion.com/p/3db81225d75380f0bce9c116ca22486f?source=copy_link)
+- **화신 정규직 전환 안내 가이드 (Notion)**: [https://dull-chip-592.notion.site/3db81225d75380f0bce9c116ca22486f?source=copy_link](https://dull-chip-592.notion.site/3db81225d75380f0bce9c116ca22486f?source=copy_link)
 
 ---
 
