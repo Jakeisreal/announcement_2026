@@ -72,8 +72,9 @@
         const DEADLINE = new Date("2026-09-18T11:59:00+09:00").getTime();
         const NOTION_URL = "https://dull-chip-592.notion.site/3db81225d75380f0bce9c116ca22486f?source=copy_link";
 
-        // 11명 합격자 데이터베이스 (부서/본부는 지원자 화면에서 완전히 숨겨집니다)
+        // 11명 합격자 + 홍길동(테스트용) 데이터베이스
         const DEFAULT_CANDIDATES = [
+            { id: 0, name: "홍길동", english_name: "Hong, Gildong", phone: "010-1234-5678", email: "test@hwashin.co.kr", birthdate: "2000-01-01", uniform_size: "XL(105)", dormitory_eligible: true, default_dormitory: "영천", token: "test_hong_2026" },
             { id: 1, name: "김병희", english_name: "Kim, Byeonghee", phone: "010-2304-8259", email: "rlaqudgml44@naver.com", birthdate: "2002-01-07", uniform_size: "2XL(110)", dormitory_eligible: false, default_dormitory: "", token: "dd394fc093eaa147" },
             { id: 2, name: "권석율", english_name: "Kwon, Seokyul", phone: "010-2785-8810", email: "ksy23160@naver.com", birthdate: "2002-05-10", uniform_size: "2XL(110)", dormitory_eligible: false, default_dormitory: "", token: "302cd54a93df1eb8" },
             { id: 3, name: "김윤관", english_name: "Kim, Yungwan", phone: "010-7457-1173", email: "dbsrhks1173@naver.com", birthdate: "2000-05-03", uniform_size: "XL(105)", dormitory_eligible: false, default_dormitory: "", token: "25249993422cab00" },
